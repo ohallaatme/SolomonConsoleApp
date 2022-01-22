@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "L/K9gGiGU0mUfD+IcNNAnSFKmPZ7mSMr2LMLL+Q7RhtP9s67+FFDjXwcDHgCR8QD98LIx3jyUA6IA36s6oDOYw==",
+  "success": true,
+  "projectFilePath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj",
+  "expectedPackageFiles": [
+    "/Users/katherineohalloran/.nuget/packages/microsoft.netcore.app.host.osx-x64/5.0.12/microsoft.netcore.app.host.osx-x64.5.0.12.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,16 @@
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/SolomonApp.deps.json
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/SolomonApp.runtimeconfig.json
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/SolomonApp.runtimeconfig.dev.json
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/SolomonApp.dll
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/ref/SolomonApp.dll
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/SolomonApp.pdb
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.csproj.AssemblyReference.cache
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.GeneratedMSBuildEditorConfig.editorconfig
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.AssemblyInfoInputs.cache
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.AssemblyInfo.cs
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.csproj.CoreCompileInputs.cache
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.dll
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/ref/SolomonApp.dll
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.pdb
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/Debug/net5.0/SolomonApp.genruntimeconfig.cache
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/bin/Debug/net5.0/SolomonApp
