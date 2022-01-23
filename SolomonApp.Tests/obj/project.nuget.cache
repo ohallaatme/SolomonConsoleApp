@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "cIMBLtCtdvhSoEvXDQP03MhPt3D21CVKmzUp/JUbag9kUjZeGA6XR1MGV4834t1T7uMO2kRtX1xfYAkia08Wrg==",
+  "dgSpecHash": "F4VUegXb0JkgPCSyn3QAivYV7hMy6iefpzZOOOaFV9vz5XBGCHPHacm0iSvBF+YQitNyvc6B77/iR/NjBw9Rxw==",
   "success": true,
-  "projectFilePath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
+  "projectFilePath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
   "expectedPackageFiles": [
     "/Users/katherineohalloran/.nuget/packages/coverlet.collector/3.0.2/coverlet.collector.3.0.2.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/microsoft.codecoverage/16.9.4/microsoft.codecoverage.16.9.4.nupkg.sha512",

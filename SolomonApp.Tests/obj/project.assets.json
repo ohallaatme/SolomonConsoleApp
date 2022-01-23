@@ -5938,11 +5938,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
+      "projectUniqueName": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
       "projectName": "SolomonApp.Tests",
-      "projectPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
+      "projectPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
       "packagesPath": "/Users/katherineohalloran/.nuget/packages/",
-      "outputPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp.Tests/obj/",
+      "outputPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp.Tests/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/katherineohalloran/.config/NuGet/NuGet.Config"
@@ -5957,8 +5957,8 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj": {
-              "projectPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj"
+            "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj": {
+              "projectPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj"
             }
           }
         }

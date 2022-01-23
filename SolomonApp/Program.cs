@@ -4,6 +4,7 @@ using SolomonApp.Data;
 using SolomonApp.Parsers;
 using System.Threading.Tasks;
 using SolomonApp.Models;
+using System.Collections.Generic;
 
 namespace SolomonApp
 {
@@ -28,60 +29,48 @@ namespace SolomonApp
 
             Console.WriteLine("Income Statement Test: ");
 
-            foreach (var statement in incomeStatements.IncomeStatements)
-            {
-                Console.WriteLine(statement.GrossProfitRaw);
-            }
 
             Console.WriteLine("Kicking off GP analysis...");
 
-            await GPResults(incomeStatements);
-
-            /*
-            // == Balance Sheet Initial Test ==
-            var balanceSheets = await finDb.GetBalanceSheet(coTicker);
-
-            Console.WriteLine("Balance Sheet Tests: ");
-
-            foreach (var statement in balanceSheets.BalanceSheets)
-            {
-                Console.WriteLine(statement.TotalCurrentAssetsRaw);
-            }
-
-            
-
-
-            // == Company Overview Test
-            var companyOverview = await finDb.GetCompanyOverview(coTicker);
-
-            Console.WriteLine("Company Overview Test One: ");
-
-            Console.WriteLine(companyOverview.EbitdaRaw);
-
-            var cashFlowStatements = await finDb.GetCashFlowStatement(coTicker);
-
-            Console.WriteLine("Cash Flow Tests: ");
-
-            foreach (var statement in cashFlowStatements.CashFlowStatements)
-            {
-                Console.WriteLine(statement.CashFlowFromFinancingRaw);
-            }
-            */
-        }
-        static async Task GPResults(IncomeStatementList incomeStatementList)
-        {
             FinancialDataParser finParser = new FinancialDataParser();
+
+
+            await GpResults(incomeStatements, finParser);
+            await SgaResults(incomeStatements, finParser);
+
+        }
+
+        static async Task GpResults(IncomeStatementList incomeStatementList, FinancialDataParser finParser)
+        {
+            string kpiType = "Gross Profit Percent";
 
             var gmResults = finParser.CalcGrossMarginPercentAllYrs(incomeStatementList);
 
-            foreach(var item in gmResults)
+            LoopThroughPercResults(kpiType, gmResults, finParser);
+        }
+
+        static async Task SgaResults(IncomeStatementList incomeStatementList, FinancialDataParser finParser)
+        {
+            string kpiType = "Selling and General Admin Expenses as a Percent of Gross Profit";
+            var sgaResults = finParser.CalcSgaPercentAllYrs(incomeStatementList);
+
+            LoopThroughPercResults(kpiType, sgaResults, finParser);
+
+        }
+
+        static void LoopThroughPercResults(string kpiType,
+                    Dictionary<string, Dictionary<string, decimal>> resultsDict,
+                    FinancialDataParser finParser)
+        {
+            foreach(var item in resultsDict)
             {
-                Console.WriteLine("Results for {0}", item.Key);
+                Console.WriteLine("{0} results for {1}", kpiType, item.Key);
+
                 foreach(var innerItem in item.Value)
                 {
-                    var formattedGM = finParser.FormatPercentValues(innerItem.Value);
+                    var formattedRes = finParser.FormatPercentValues(innerItem.Value);
                     Console.WriteLine("Fiscal Period End Date: {0}", innerItem.Key);
-                    Console.WriteLine("GM Percent: {0}", formattedGM);
+                    Console.WriteLine("{0}: {1}", kpiType, formattedRes);
                 }
             }
         }
