@@ -5,6 +5,7 @@ using SolomonApp.Parsers;
 using System.Threading.Tasks;
 using SolomonApp.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SolomonApp
 {
@@ -33,39 +34,46 @@ namespace SolomonApp
 
             FinancialDataParser finParser = new FinancialDataParser();
 
-            await IncRatioResults("GrossProfitRaw", "TotalRevenueRaw", "Gross Profit Percent",
-                incomeStatements, finParser);
-
-            await IncRatioResults("SellingGeneralAndAdministrativeRaw", "GrossProfitRaw",
-                "SG&A Expense as a % of Gross Profit", incomeStatements, finParser);
+            await IncScorecardResults(incomeStatements, finParser);
+            
 
         }
-        static async Task IncRatioResults(string numAcct, string denomAcct,
-                                    string kpiType,
-                                    IncomeStatementList incomeStatementList,
+        static async Task IncScorecardResults(IncomeStatementList incomeStatementList,
                                     FinancialDataParser finParser)
         {
-            var results = finParser.CalcIncStatementFinancialRatio(numAcct, denomAcct,
-                                    incomeStatementList);
-
-            LoopThroughPercResults(kpiType, results, finParser);
+            var IncScorecard = finParser.assembleScorecardOneCo(incomeStatementList, finParser);
+            LoopThroughIncResults(IncScorecard, finParser);
         }
 
-        static void LoopThroughPercResults(string kpiType,
-                    Dictionary<string, Dictionary<string, decimal>> resultsDict,
-                    FinancialDataParser finParser)
+        static void LoopThroughIncResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results, FinancialDataParser finParser)
         {
-            foreach(var item in resultsDict)
-            {
-                Console.WriteLine("{0} results for {1}", kpiType, item.Key);
+            var ticker = results.Keys.First();
+            Console.WriteLine("Income Statement Results for: {0}", ticker);
 
-                foreach(var innerItem in item.Value)
-                {
-                    var formattedRes = finParser.FormatPercentValues(innerItem.Value);
-                    Console.WriteLine("Fiscal Period End Date: {0}", innerItem.Key);
-                    Console.WriteLine("{0}: {1}", kpiType, formattedRes);
-                }
+            var innerRes = results[ticker];
+
+            
+            var gpRes = innerRes["gpRes"];
+            var sgaRes = innerRes["sgaRes"];
+            var intExpRes = innerRes["intExpRes"];
+            var taxExpRes = innerRes["taxExpRes"];
+            WriteIndividualKPIResults("Gross Profit %", gpRes, finParser);
+            WriteIndividualKPIResults("SGA Expense as % of Gross Profit", sgaRes, finParser);
+            WriteIndividualKPIResults("int Expense as % of Operating Income", intExpRes, finParser);
+            WriteIndividualKPIResults("Tax Expense as % of Inc Before Taxes", taxExpRes, finParser);
+        }
+
+        static void WriteIndividualKPIResults(string resType, Dictionary<string, decimal> results,
+            FinancialDataParser finParser)
+        {
+            Console.WriteLine(resType);
+
+            foreach(var item in results)
+            {
+                var formRes = finParser.FormatPercentValues(item.Value);
+                Console.WriteLine("{0} : {1} ", item.Key, formRes);
             }
+
         }
     }
 }

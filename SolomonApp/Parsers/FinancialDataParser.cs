@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SolomonApp.Models;
 using SolomonApp.Parsers.Interfaces;
 
@@ -7,7 +8,60 @@ namespace SolomonApp.Parsers
 {
     public class FinancialDataParser : IFinancialDataParser
     {
+        #region "Scorecards"
+        /// <summary>
+        /// output format is {co ticker : {ratioName : {fiscalDate : Ratio ,fiscalDate : Ratio}) ratioName : {fiscalDate : Ratio}..}}}
+        /// </summary>
+        /// <param name="incomeStatementList"></param>
+        /// <param name="finParser"></param>
+        /// <returns></returns>
+        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> assembleScorecardOneCo(IncomeStatementList incomeStatementList,
+                                                                            FinancialDataParser finParser)
+        {
+            // grab co ticker
+            var ticker = incomeStatementList.Symbol;
 
+            // final results
+            Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> incStatementScorecard = new Dictionary<string, Dictionary<string, Dictionary<string, decimal>>>();
+
+            // Ratio Results - Stores the ratio name as the key and the results by fiscal date ending as the value inner dictionary
+            Dictionary<string, Dictionary<string, decimal>> ratioResults = new Dictionary<string, Dictionary<string, decimal>>();
+
+            // Accounts leveraged
+            string grossProfitRaw = "GrossProfitRaw";
+            string totalRevenueRaw = "TotalRevenueRaw";
+            string sgaRaw = "SellingGeneralAndAdministrativeRaw";
+            string interestExpenseRaw = "InterestExpenseRaw";
+            string operatingIncomeRaw = "OperatingIncomeRaw";
+            string incomeBeforeTaxRaw = "IncomeBeforeTaxRaw";
+            string incomeTaxExpenseRaw = "IncomeTaxExpenseRaw";
+
+            // GpResults
+            var gpResults = finParser.CalcIncStatementFinancialRatio(grossProfitRaw, totalRevenueRaw, incomeStatementList);
+            ratioResults.Add("gpRes", gpResults);
+
+            // SgaResults
+            var sgaResults = finParser.CalcIncStatementFinancialRatio(sgaRaw, grossProfitRaw, incomeStatementList);
+            ratioResults.Add("sgaRes", sgaResults);
+
+            // intExpResults
+            var intExpResults = finParser.CalcIncStatementFinancialRatio(interestExpenseRaw, operatingIncomeRaw, incomeStatementList);
+            ratioResults.Add("intExpRes", intExpResults);
+
+            // tax expense test results
+            // i.e. if tax exp reported is not 35% of income before taxes where is the extra
+            // income coming from
+            var taxExpResults = finParser.CalcIncStatementFinancialRatio(incomeTaxExpenseRaw, incomeBeforeTaxRaw, incomeStatementList);
+            ratioResults.Add("taxExpRes", taxExpResults);
+
+
+            // return final ratio results
+            incStatementScorecard.Add(ticker, ratioResults);
+            return incStatementScorecard;
+
+        }
+
+        #endregion
         #region "Income Statement KPIs"
 
         /*
@@ -23,17 +77,12 @@ namespace SolomonApp.Parsers
         /// <param name="denomonatorAccount"></param>
         /// <param name="incomeStatementList"></param>
         /// <returns></returns>
-        public Dictionary<string, Dictionary<string, decimal>> CalcIncStatementFinancialRatio(string numeratorAccount,
+        public  Dictionary<string, decimal> CalcIncStatementFinancialRatio(string numeratorAccount,
                                                                     string denomonatorAccount,
                                                                     IncomeStatementList incomeStatementList)
         {
-            // save company symbol
-            var ticker = incomeStatementList.Symbol;
 
-            // final results dict
-            Dictionary<string, Dictionary<string, decimal>> finalResults = new Dictionary<string, Dictionary<string, decimal>>();
-
-            // inner results dict for the ratio
+            // results dict for the ratio
             Dictionary<string, decimal> ratioResults = new Dictionary<string, decimal>();
 
             foreach(var statement in incomeStatementList.IncomeStatements)
@@ -53,8 +102,7 @@ namespace SolomonApp.Parsers
 
             }
 
-            finalResults.Add(ticker, ratioResults);
-            return finalResults;
+            return ratioResults;
         }
         #endregion
 
@@ -103,7 +151,12 @@ namespace SolomonApp.Parsers
 
         }
 
-        
+        /// <summary>
+        /// Convert string property into decimal from deserialized string JSON
+        /// </summary>
+        /// <param name="finDataObject"></param>
+        /// <param name="kpiName"></param>
+        /// <returns></returns>
         public decimal GetDecimalKpiValue(object finDataObject, string kpiName)
         {
             string kpiBalanceRaw = Convert.ToString(GetPropertyValue(finDataObject, kpiName));
@@ -119,14 +172,22 @@ namespace SolomonApp.Parsers
 
         }
 
-        // TODO: 
+        /// <summary>
+        /// Get property value from financial models
+        /// </summary>
+        /// <param name="finDataObject"></param>
+        /// <param name="propName"></param>
+        /// <returns></returns>
         public object GetPropertyValue(object finDataObject, string propName)
         {
             return finDataObject.GetType().GetProperty(propName).GetValue(finDataObject, null);
         }
 
-        // helper method to eventually format the decimals into strings
-        // with set decimal places and percent value
+        /// <summary>
+        /// Format ratios into percent values for scorecard display
+        /// </summary>
+        /// <param name="numToConvert"></param>
+        /// <returns></returns>
         public string FormatPercentValues(decimal numToConvert)
         {
             string valFormat = String.Format("Value: {0:P2}.", numToConvert);
