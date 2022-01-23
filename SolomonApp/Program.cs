@@ -30,32 +30,25 @@ namespace SolomonApp
             Console.WriteLine("Income Statement Test: ");
 
 
-            Console.WriteLine("Kicking off GP analysis...");
 
             FinancialDataParser finParser = new FinancialDataParser();
 
+            await IncRatioResults("GrossProfitRaw", "TotalRevenueRaw", "Gross Profit Percent",
+                incomeStatements, finParser);
 
-            await GpResults(incomeStatements, finParser);
-            await SgaResults(incomeStatements, finParser);
+            await IncRatioResults("SellingGeneralAndAdministrativeRaw", "GrossProfitRaw",
+                "SG&A Expense as a % of Gross Profit", incomeStatements, finParser);
 
         }
-
-        static async Task GpResults(IncomeStatementList incomeStatementList, FinancialDataParser finParser)
+        static async Task IncRatioResults(string numAcct, string denomAcct,
+                                    string kpiType,
+                                    IncomeStatementList incomeStatementList,
+                                    FinancialDataParser finParser)
         {
-            string kpiType = "Gross Profit Percent";
+            var results = finParser.CalcIncStatementFinancialRatio(numAcct, denomAcct,
+                                    incomeStatementList);
 
-            var gmResults = finParser.CalcGrossMarginPercentAllYrs(incomeStatementList);
-
-            LoopThroughPercResults(kpiType, gmResults, finParser);
-        }
-
-        static async Task SgaResults(IncomeStatementList incomeStatementList, FinancialDataParser finParser)
-        {
-            string kpiType = "Selling and General Admin Expenses as a Percent of Gross Profit";
-            var sgaResults = finParser.CalcSgaPercentAllYrs(incomeStatementList);
-
-            LoopThroughPercResults(kpiType, sgaResults, finParser);
-
+            LoopThroughPercResults(kpiType, results, finParser);
         }
 
         static void LoopThroughPercResults(string kpiType,

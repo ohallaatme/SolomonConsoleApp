@@ -7,6 +7,7 @@ namespace SolomonApp.Parsers
 {
     public class FinancialDataParser : IFinancialDataParser
     {
+
         #region "Income Statement KPIs"
 
         /*
@@ -16,11 +17,15 @@ namespace SolomonApp.Parsers
         
          */
         /// <summary>
-        /// Get all of the historical GM %s for a company, 5 years is standard if available
+        /// Calculate income statement ratios
         /// </summary>
+        /// <param name="numeratorAccount"></param>
+        /// <param name="denomonatorAccount"></param>
         /// <param name="incomeStatementList"></param>
         /// <returns></returns>
-        public Dictionary<string, Dictionary<string, decimal>> CalcGrossMarginPercentAllYrs(IncomeStatementList incomeStatementList)
+        public Dictionary<string, Dictionary<string, decimal>> CalcIncStatementFinancialRatio(string numeratorAccount,
+                                                                    string denomonatorAccount,
+                                                                    IncomeStatementList incomeStatementList)
         {
             // save company symbol
             var ticker = incomeStatementList.Symbol;
@@ -28,61 +33,48 @@ namespace SolomonApp.Parsers
             // final results dict
             Dictionary<string, Dictionary<string, decimal>> finalResults = new Dictionary<string, Dictionary<string, decimal>>();
 
-            // results dict to save the past 5 years of info (assuming 5 years of data exists)
-            Dictionary<string, decimal> gpResults = new Dictionary<string, decimal>();
+            // inner results dict for the ratio
+            Dictionary<string, decimal> ratioResults = new Dictionary<string, decimal>();
 
-            foreach (var statement in incomeStatementList.IncomeStatements)
+            foreach(var statement in incomeStatementList.IncomeStatements)
             {
                 // get fiscal date ending for the income statement
                 string fiscalDateEnding = statement.FiscalDateEnding;
 
-                // get values for GP calc and calculate
-                long grossProfitDollars = GetLongAccountValue(statement, "GrossProfitRaw");
-                long totalRevenue = GetLongAccountValue(statement, "TotalRevenueRaw");
+                // get values for calculation
+                long numeratorDollars = GetLongAccountValue(statement, numeratorAccount);
+                long denomonatorDollars = GetLongAccountValue(statement, denomonatorAccount);
 
                 // TODO: fill in edge cases / error checks of where any of these values could be 0
-                decimal grossProfitPerc = CalcGmPerc(grossProfitDollars, totalRevenue);
+                decimal ratio = CalcRatioResult(numeratorDollars, denomonatorDollars);
 
                 // TODO: Consider currency edge cases as a part of broader data structure, here it doesn't matter as much considering its a %
-                gpResults.Add(fiscalDateEnding, grossProfitPerc);
-            }
-            finalResults.Add(ticker, gpResults);
-            return finalResults;
+                ratioResults.Add(fiscalDateEnding, ratio);
 
-        }
-
-        /// <summary>
-        /// Get all of the historical SGA as a % of GP KPIs for a company, 5 years is standard if available
-        /// </summary>
-        /// <param name="incomeStatementList"></param>
-        /// <returns></returns>
-        public Dictionary<string, Dictionary<string, decimal>> CalcSgaPercentAllYrs(IncomeStatementList incomeStatementList)
-        {
-            var ticker = incomeStatementList.Symbol;
-
-            Dictionary<string, Dictionary<string, decimal>> finalResults = new Dictionary<string, Dictionary<string, decimal>>();
-
-            Dictionary<string, decimal> sgaResults = new Dictionary<string, decimal>();
-
-            foreach(var statement in incomeStatementList.IncomeStatements)
-            {
-                string fiscalDateEnding = statement.FiscalDateEnding;
-
-                long grossProfitDollars = GetLongAccountValue(statement, "GrossProfitRaw");
-                long sgaExpenseDollars = GetLongAccountValue(statement, "SellingGeneralAndAdministrativeRaw");
-
-                decimal sgaPercent = CalcSgaPerc(sgaExpenseDollars, grossProfitDollars);
-
-                sgaResults.Add(fiscalDateEnding, sgaPercent);
             }
 
-            finalResults.Add(ticker, sgaResults);
+            finalResults.Add(ticker, ratioResults);
             return finalResults;
         }
-
         #endregion
 
         #region "income statement helper methods"
+        /// <summary>
+        /// Calc the actual ratio to support the 5 year method
+        /// CalcIncStatementFinancialRatio
+        /// </summary>
+        /// <param name="numeratorDollars"></param>
+        /// <param name="denomonatorDollars"></param>
+        /// <returns></returns>
+        public decimal CalcRatioResult(long numeratorDollars, long denomonatorDollars)
+        {
+            // have to convert one of the two factors into a decimal, or else we'll get zero back
+            // due to integer math not cooperating with decimal types
+            decimal denomDecimal = Convert.ToDecimal(denomonatorDollars);
+            decimal resultRatio = numeratorDollars / denomDecimal;
+            return resultRatio;
+        }
+
         /// <summary>
         /// Helper method to calc the GP for the 5 year GP trend method
         /// CalcGrossMarginPercentAllYrs
@@ -90,22 +82,9 @@ namespace SolomonApp.Parsers
         /// <param name="grossProfitDollars"></param>
         /// <param name="totalRevenueDollars"></param>
         /// <returns></returns>
-        public decimal CalcGmPerc(long grossProfitDollars, long totalRevenueDollars)
-        {
-            // have to convert one of the two factors into a decimal, or else we'll get zero back
-            // due to integer math not cooperating with decimal types
-            decimal totalRevenueDec = Convert.ToDecimal(totalRevenueDollars);
-            decimal grossProfitPerc = grossProfitDollars / totalRevenueDec;
-            return grossProfitPerc;
-        }
+        #endregion
 
-        public decimal CalcSgaPerc(long sgaExpenseDollars, long grossProfitDollars)
-        {
-            decimal grossProfitDec = Convert.ToDecimal(grossProfitDollars);
-            decimal sgaPercent = sgaExpenseDollars / grossProfitDec;
-            return sgaPercent;
-        }
-
+        #region "General helper methods"
         public long GetLongAccountValue(object finDataObject, string accountName)
         {
             string acctBalanceRaw = Convert.ToString(GetPropertyValue(finDataObject, accountName));
@@ -124,7 +103,7 @@ namespace SolomonApp.Parsers
 
         }
 
-        #endregion
+        
         public decimal GetDecimalKpiValue(object finDataObject, string kpiName)
         {
             string kpiBalanceRaw = Convert.ToString(GetPropertyValue(finDataObject, kpiName));
@@ -153,5 +132,6 @@ namespace SolomonApp.Parsers
             string valFormat = String.Format("Value: {0:P2}.", numToConvert);
             return valFormat; 
         }
+        #endregion
     }
 }
