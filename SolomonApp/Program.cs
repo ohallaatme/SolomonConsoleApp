@@ -3,6 +3,7 @@ using System.Reflection;
 using SolomonApp.Data;
 using SolomonApp.Parsers;
 using System.Threading.Tasks;
+using SolomonApp.Models;
 
 namespace SolomonApp
 {
@@ -21,9 +22,9 @@ namespace SolomonApp
             string coTicker = "MSFT";
 
 
-            /*
+            
             // == Income Statement Initial Test ==
-            var incomeStatements = await finDb.GetIncomeStatement(coTicker, apiKey);
+            var incomeStatements = await finDb.GetIncomeStatement(coTicker);
 
             Console.WriteLine("Income Statement Test: ");
 
@@ -32,8 +33,13 @@ namespace SolomonApp
                 Console.WriteLine(statement.GrossProfitRaw);
             }
 
+            Console.WriteLine("Kicking off GP analysis...");
+
+            await GPResults(incomeStatements);
+
+            /*
             // == Balance Sheet Initial Test ==
-            var balanceSheets = await finDb.GetBalanceSheet(coTicker, apiKey);
+            var balanceSheets = await finDb.GetBalanceSheet(coTicker);
 
             Console.WriteLine("Balance Sheet Tests: ");
 
@@ -42,7 +48,7 @@ namespace SolomonApp
                 Console.WriteLine(statement.TotalCurrentAssetsRaw);
             }
 
-            */
+            
 
 
             // == Company Overview Test
@@ -59,6 +65,24 @@ namespace SolomonApp
             foreach (var statement in cashFlowStatements.CashFlowStatements)
             {
                 Console.WriteLine(statement.CashFlowFromFinancingRaw);
+            }
+            */
+        }
+        static async Task GPResults(IncomeStatementList incomeStatementList)
+        {
+            FinancialDataParser finParser = new FinancialDataParser();
+
+            var gmResults = finParser.CalcGrossMarginPercentAllYrs(incomeStatementList);
+
+            foreach(var item in gmResults)
+            {
+                Console.WriteLine("Results for {0}", item.Key);
+                foreach(var innerItem in item.Value)
+                {
+                    var formattedGM = finParser.FormatPercentValues(innerItem.Value);
+                    Console.WriteLine("Fiscal Period End Date: {0}", innerItem.Key);
+                    Console.WriteLine("GM Percent: {0}", formattedGM);
+                }
             }
         }
     }

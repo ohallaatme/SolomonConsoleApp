@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj": {}
+    "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj": {}
   },
   "projects": {
-    "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj": {
+    "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj",
+        "projectUniqueName": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj",
         "projectName": "SolomonApp",
-        "projectPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/SolomonApp.csproj",
+        "projectPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj",
         "packagesPath": "/Users/katherineohalloran/.nuget/packages/",
-        "outputPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonApp/SolomonApp/obj/",
+        "outputPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/katherineohalloran/.nuget/NuGet/NuGet.Config"
