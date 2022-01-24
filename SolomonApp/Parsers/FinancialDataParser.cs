@@ -15,7 +15,7 @@ namespace SolomonApp.Parsers
         /// <param name="incomeStatementList"></param>
         /// <param name="finParser"></param>
         /// <returns></returns>
-        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> assembleScorecardOneCo(IncomeStatementList incomeStatementList,
+        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> assembleIncScorecardOneCo(IncomeStatementList incomeStatementList,
                                                                             FinancialDataParser finParser)
         {
             // grab co ticker
@@ -61,6 +61,51 @@ namespace SolomonApp.Parsers
 
         }
 
+        // PICKUP 1.23.2022: Test balance sheet score card so far, incorporate account trends
+
+        // Note many balance sheet ratios require income statement accounts
+        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> assembleBsScorecardOneCo(BalanceSheetList balanceSheetList,
+                                            IncomeStatementList incomeStatementList,
+                                            FinancialDataParser finParser)
+        {
+            // grab co ticker
+            var ticker = balanceSheetList.Symbol;
+
+            // final results
+            Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> balanceSheetScorecard = new Dictionary<string, Dictionary<string, Dictionary<string, decimal>>>();
+
+            // Ratio Results - Stores the ratio name as the key and the results by fiscal date ending as the value inner dictionary
+            Dictionary<string, Dictionary<string, decimal>> ratioResults = new Dictionary<string, Dictionary<string, decimal>>();
+
+
+            // == Accounts leveraged ==
+
+            // -- Income Statement --
+            string totalRevenueRaw = "TotalRevenueRaw";
+
+
+
+            // -- Balance Sheet --
+
+            // * Assets *
+            // make sure that currentNetReceivables is correct here...
+            string curNetReceivablesRaw = "CurrentNetReceivablesRaw";
+
+            // * Liabilities * 
+
+
+            // net receivables as a % of rev results
+            var recRevPercResults = finParser.CalcBalanceSheetFinancialRatio(curNetReceivablesRaw,
+                totalRevenueRaw, incomeStatementList, balanceSheetList);
+            ratioResults.Add("netRecResults", recRevPercResults);
+
+            // cash to debt results
+
+
+            // final res
+            return balanceSheetScorecard;
+        }
+
         #endregion
         #region "Income Statement KPIs"
 
@@ -77,7 +122,7 @@ namespace SolomonApp.Parsers
         /// <param name="denomonatorAccount"></param>
         /// <param name="incomeStatementList"></param>
         /// <returns></returns>
-        public  Dictionary<string, decimal> CalcIncStatementFinancialRatio(string numeratorAccount,
+        public Dictionary<string, decimal> CalcIncStatementFinancialRatio(string numeratorAccount,
                                                                     string denomonatorAccount,
                                                                     IncomeStatementList incomeStatementList)
         {
@@ -106,6 +151,33 @@ namespace SolomonApp.Parsers
         }
         #endregion
 
+        // TODO: eliminate this redundancy as it relates to the income statement financial ratios, ok
+        // for now to test
+        #region "Balance Sheet KPIs"
+        public Dictionary<string, decimal> CalcBalanceSheetFinancialRatio(string numeratorAcct,
+            string denomonatorAcct, IncomeStatementList incomeStatement,
+            BalanceSheetList balanceSheetList)
+        {
+            Dictionary<string, decimal> ratioResults = new Dictionary<string, decimal>();
+
+
+            foreach(var statement in balanceSheetList.BalanceSheets)
+            {
+                string fiscalDateEnding = statement.FiscalDateEnding;
+
+                long numeratorDollars = GetLongAccountValue(statement, numeratorAcct);
+                long denomonatorDollars = GetLongAccountValue(statement, denomonatorAcct);
+
+                decimal ratio = CalcRatioResult(numeratorDollars, denomonatorDollars);
+                ratioResults.Add(fiscalDateEnding, ratio);
+            }
+
+            return ratioResults;
+
+        }
+
+        #endregion
+
         #region "income statement helper methods"
         /// <summary>
         /// Calc the actual ratio to support the 5 year method
@@ -131,7 +203,85 @@ namespace SolomonApp.Parsers
         /// <param name="totalRevenueDollars"></param>
         /// <returns></returns>
         #endregion
+        #region "Balance sheet helper methods"
 
+
+        public Dictionary<string, decimal> getCashToDebtRatio(BalanceSheetList balanceSheetList)
+        {
+            Dictionary<string, decimal> cashToDebtRatioResults = new Dictionary<string, decimal>();
+
+            foreach(var statement in balanceSheetList.BalanceSheets)
+            {
+                string fiscalDateEnding = statement.FiscalDateEnding;
+
+                // numerator
+                long cashAndEquivilants = GetLongAccountValue(statement, "CashAndShortTermInvestmentsRaw");
+
+                // denomonator
+                long shortTermDebt = GetLongAccountValue(statement, "ShortTermDebtRaw");
+                long longTermDebt = GetLongAccountValue(statement, "LongTermDebtRaw");
+
+                long totalDebt = shortTermDebt + longTermDebt;
+
+                var cashRatioRes = CalcRatioResult(cashAndEquivilants, totalDebt);
+
+                cashToDebtRatioResults.Add(fiscalDateEnding, cashRatioRes);
+
+            }
+
+            return cashToDebtRatioResults;
+        }
+
+        #endregion
+        #region "Account trend methods"
+        public Dictionary<string, decimal> GetAcctBalanceTrend(string accountName,
+            string statementName,
+            IncomeStatementList incomeStatementList=null,
+            BalanceSheetList balanceSheetList=null)
+        {
+            Dictionary<string, decimal> acctBalanceResults = new Dictionary<string, decimal>();
+
+            if (statementName == "Income Statement")
+            {
+                // TODO: potentially make guard clause into common class for full project implementation
+                // guard clause
+                if (incomeStatementList == null)
+                {
+                    throw new ArgumentNullException("Income Statement List cannot be null for income statement account trend");
+                }
+                foreach(var statement in incomeStatementList.IncomeStatements)
+                {
+                    var fiscalYearEnding = statement.FiscalDateEnding;
+                    var acctBalance = GetLongAccountValue(statement, accountName);
+
+                    acctBalanceResults.Add(fiscalYearEnding, acctBalance);
+                }
+
+                return acctBalanceResults;
+            }
+            else if (statementName == "Balance Sheet")
+            {
+                if (balanceSheetList == null)
+                {
+                    throw new ArgumentNullException("Balance Sheet List cannot be null for income statement account trend");
+                }
+                foreach (var statement in balanceSheetList.BalanceSheets)
+                {
+                    var fiscalYearEnding = statement.FiscalDateEnding;
+                    var acctBalance = GetLongAccountValue(statement, accountName);
+
+                    acctBalanceResults.Add(fiscalYearEnding, acctBalance);
+                }
+
+                return acctBalanceResults;
+            }
+            else
+            {
+                throw new ArgumentException("Statement type passed is not available for analysis");
+            }
+        }
+
+        #endregion
         #region "General helper methods"
         public long GetLongAccountValue(object finDataObject, string accountName)
         {

@@ -41,9 +41,9 @@ namespace SolomonApp
         static async Task IncScorecardResults(IncomeStatementList incomeStatementList,
                                     FinancialDataParser finParser)
         {
-            var IncScorecard = finParser.assembleScorecardOneCo(incomeStatementList, finParser);
+            var IncScorecard = finParser.assembleIncScorecardOneCo(incomeStatementList, finParser);
             LoopThroughIncResults(IncScorecard, finParser);
-        }
+        }   
 
         static void LoopThroughIncResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results, FinancialDataParser finParser)
         {
