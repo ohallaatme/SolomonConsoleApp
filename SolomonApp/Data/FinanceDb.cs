@@ -54,7 +54,7 @@ namespace SolomonApp.Data
 
             var incomeStatements = await JsonSerializer.DeserializeAsync<IncomeStatementList>(await streamTask);
 
-            return incomeStatements;
+            return incomeStatements; 
 
         }
 

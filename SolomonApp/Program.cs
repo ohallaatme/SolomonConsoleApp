@@ -28,24 +28,38 @@ namespace SolomonApp
             // == Income Statement Initial Test ==
             var incomeStatements = await finDb.GetIncomeStatement(coTicker);
 
-            Console.WriteLine("Income Statement Test: ");
-
-
+            Console.WriteLine("Income Statement Tests: ");
 
             FinancialDataParser finParser = new FinancialDataParser();
 
             await IncScorecardResults(incomeStatements, finParser);
-            
+
+            Console.WriteLine("Balance Sheet Tests: ");
+
+            var balanceSheets = await finDb.GetBalanceSheet(coTicker);
+
+            await BalSheetScorecardResults(balanceSheets, incomeStatements, finParser);
 
         }
         static async Task IncScorecardResults(IncomeStatementList incomeStatementList,
                                     FinancialDataParser finParser)
         {
-            var IncScorecard = finParser.assembleIncScorecardOneCo(incomeStatementList, finParser);
+            var IncScorecard = finParser.AssembleIncScorecardOneCo(incomeStatementList, finParser);
             LoopThroughIncResults(IncScorecard, finParser);
-        }   
+        }
 
-        static void LoopThroughIncResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results, FinancialDataParser finParser)
+        static async Task BalSheetScorecardResults(BalanceSheetList balanceSheetList,
+                                    IncomeStatementList incomeStatementList,
+                                    FinancialDataParser finParser)
+        {
+            var BalScorecard = finParser.AssembleBsScorecardOneCo(balanceSheetList,
+                incomeStatementList,
+                finParser);
+            LoopThroughBsResults(BalScorecard, finParser);
+        }
+
+        static void LoopThroughIncResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results,
+                                          FinancialDataParser finParser)
         {
             var ticker = results.Keys.First();
             Console.WriteLine("Income Statement Results for: {0}", ticker);
@@ -61,6 +75,17 @@ namespace SolomonApp
             WriteIndividualKPIResults("SGA Expense as % of Gross Profit", sgaRes, finParser);
             WriteIndividualKPIResults("int Expense as % of Operating Income", intExpRes, finParser);
             WriteIndividualKPIResults("Tax Expense as % of Inc Before Taxes", taxExpRes, finParser);
+        }
+
+        static void LoopThroughBsResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results, FinancialDataParser finParser)
+        {
+            var ticker = results.Keys.First();
+            Console.WriteLine("Balance Sheet Results for: {0}", ticker);
+
+            var innerRes = results[ticker];
+
+            var recPercRes = innerRes["netRecResults"];
+            WriteIndividualKPIResults("Net Receivables as a % of Revenue", recPercRes, finParser);
         }
 
         static void WriteIndividualKPIResults(string resType, Dictionary<string, decimal> results,

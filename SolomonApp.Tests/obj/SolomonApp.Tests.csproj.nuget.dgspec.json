@@ -14,7 +14,7 @@
         "outputPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp.Tests/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/katherineohalloran/.config/NuGet/NuGet.Config"
+          "/Users/katherineohalloran/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net5.0"
@@ -92,7 +92,7 @@
         "outputPath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/katherineohalloran/.config/NuGet/NuGet.Config"
+          "/Users/katherineohalloran/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net5.0"
