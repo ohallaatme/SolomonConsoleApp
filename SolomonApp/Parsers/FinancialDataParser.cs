@@ -8,15 +8,14 @@ namespace SolomonApp.Parsers
 {
     public class FinancialDataParser : IFinancialDataParser
     {
-        #region "Scorecards"
+        #region "SingleCoScorecards"
         /// <summary>
         /// output format is {co ticker : {ratioName : {fiscalDate : Ratio ,fiscalDate : Ratio}) ratioName : {fiscalDate : Ratio}..}}}
         /// </summary>
         /// <param name="incomeStatementList"></param>
         /// <param name="finParser"></param>
         /// <returns></returns>
-        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> AssembleIncScorecardOneCo(IncomeStatementList incomeStatementList,
-                                                                            FinancialDataParser finParser)
+        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> AssembleIncScorecardOneCo(IncomeStatementList incomeStatementList)
         {
             // grab co ticker
             var ticker = incomeStatementList.Symbol;
@@ -36,24 +35,46 @@ namespace SolomonApp.Parsers
             string incomeBeforeTaxRaw = "IncomeBeforeTaxRaw";
             string incomeTaxExpenseRaw = "IncomeTaxExpenseRaw";
 
+            List<string> acctNames = new List<string>()
+            {
+                grossProfitRaw,
+                totalRevenueRaw,
+                sgaRaw,
+                interestExpenseRaw,
+                operatingIncomeRaw,
+                incomeBeforeTaxRaw,
+                incomeTaxExpenseRaw
+            };
+
+            // store account balances for the rolling 5 years available 
+            Dictionary<string, Dictionary<string, long>> acctBalances = new Dictionary<string, Dictionary<string, long>>();
+
+            // get account balances
+            foreach(string acct in acctNames)
+            {
+                Dictionary<string, long> balances = GetAcctFiveYrBal(acctName: acct, incomeStatementList: incomeStatementList);
+                acctBalances.Add(acct, balances);
+            }
+
+
             // GpResults
-            var gpResults = finParser.CalcIncStatementFinancialRatio(grossProfitRaw, totalRevenueRaw, incomeStatementList);
+            var gpResults = CalcFinancialRatio(acctBalances[grossProfitRaw], acctBalances[totalRevenueRaw]);
             ratioResults.Add("gpRes", gpResults);
 
+
             // SgaResults
-            var sgaResults = finParser.CalcIncStatementFinancialRatio(sgaRaw, grossProfitRaw, incomeStatementList);
+            var sgaResults = CalcFinancialRatio(acctBalances[sgaRaw], acctBalances[operatingIncomeRaw]);
             ratioResults.Add("sgaRes", sgaResults);
 
             // intExpResults
-            var intExpResults = finParser.CalcIncStatementFinancialRatio(interestExpenseRaw, operatingIncomeRaw, incomeStatementList);
+            var intExpResults = CalcFinancialRatio(acctBalances[interestExpenseRaw], acctBalances[operatingIncomeRaw]);
             ratioResults.Add("intExpRes", intExpResults);
 
             // tax expense test results
             // i.e. if tax exp reported is not 35% of income before taxes where is the extra
             // income coming from
-            var taxExpResults = finParser.CalcIncStatementFinancialRatio(incomeTaxExpenseRaw, incomeBeforeTaxRaw, incomeStatementList);
+            var taxExpResults = CalcFinancialRatio(acctBalances[incomeTaxExpenseRaw], acctBalances[incomeBeforeTaxRaw]);
             ratioResults.Add("taxExpRes", taxExpResults);
-
 
             // return final ratio results
             incStatementScorecard.Add(ticker, ratioResults);
@@ -64,8 +85,7 @@ namespace SolomonApp.Parsers
 
         // Note many balance sheet ratios require income statement accounts
         public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> AssembleBsScorecardOneCo(BalanceSheetList balanceSheetList,
-                                            IncomeStatementList incomeStatementList,
-                                            FinancialDataParser finParser)
+                                            IncomeStatementList incomeStatementList)
         {
             // grab co ticker
             var ticker = balanceSheetList.Symbol;
@@ -81,30 +101,68 @@ namespace SolomonApp.Parsers
 
             // -- Income Statement --
             string totalRevenueRaw = "TotalRevenueRaw";
-
-
+            string totalNetIncRaw = "NetIncomeRaw";
 
             // -- Balance Sheet --
 
             // * Assets *
             string curNetReceivablesRaw = "CurrentNetReceivablesRaw";
+            string cashAndStInvestmentsRaw = "CashAndShortTermInvestmentsRaw";
+            string totalInvRaw = "InventoryRaw";
+            
 
             // * Liabilities * 
+            string shortTermDebt = "ShortTermDebtRaw";
+            string longTermDebt = "LongTermDebtRaw";
 
+            List<string> incStmtAcctNames = new List<string>()
+            {
+                totalRevenueRaw,
+                totalNetIncRaw
+            };
 
-            // == Get Account Balances ==
-            var totalRevRawBalances = GetAcctFiveYrBal(acctName: totalRevenueRaw,
-                incomeStatementList: incomeStatementList);
+            List<string> balShtAcctNames = new List<string>()
+            {
+                curNetReceivablesRaw,
+                cashAndStInvestmentsRaw,
+                totalInvRaw,
+                shortTermDebt,
+                longTermDebt
+            };
 
-            var curNetRecRawBalances = GetAcctFiveYrBal(acctName: curNetReceivablesRaw,
-                balanceSheetList: balanceSheetList);
+            Dictionary<string, Dictionary<string, long>> acctBalances = new Dictionary<string, Dictionary<string, long>>();
+
+            foreach(var acct in incStmtAcctNames)
+            {
+                Dictionary<string, long> balances = GetAcctFiveYrBal(acctName: acct, incomeStatementList: incomeStatementList);
+                acctBalances.Add(acct, balances);
+            }
+
+            foreach(var acct in balShtAcctNames)
+            {
+                Dictionary<string, long> balances = GetAcctFiveYrBal(acctName: acct, balanceSheetList: balanceSheetList);
+                acctBalances.Add(acct, balances);
+            }
+
+            // need total debt, which isn't native to the original payload returned
+            Dictionary<string, long> totalDebtRawBalances = SumTwoAccountBalances(acctBalances[shortTermDebt],
+                acctBalances[longTermDebt]);
+
 
             // net receivables as a % of rev results
-            var recRevPercResults = CalcIncToBsFinancialRatio(curNetRecRawBalances, totalRevRawBalances);
+            Dictionary<string, decimal> recRevPercResults = CalcFinancialRatio(acctBalances[curNetReceivablesRaw], acctBalances[totalRevenueRaw]);
             ratioResults.Add("netRecResults", recRevPercResults);
 
             // cash to debt results
+            Dictionary<string, decimal> cashToDebtResults = CalcFinancialRatio(acctBalances[cashAndStInvestmentsRaw],
+                totalDebtRawBalances);
+            ratioResults.Add("cashToDebtResults", cashToDebtResults);
 
+            // inventory to net earnings, if both of these are on a corresponding rise its a sign of competitive advantage
+            // (vs booming and busting every few years)
+            Dictionary<string, decimal> invToNetEarningsResults = CalcFinancialRatio(acctBalances[totalInvRaw],
+                acctBalances[totalNetIncRaw]);
+            ratioResults.Add("invToNetEarningsResults", invToNetEarningsResults);
 
             // final res
             balanceSheetScorecard.Add(ticker, ratioResults);
@@ -112,76 +170,9 @@ namespace SolomonApp.Parsers
         }
         #endregion
 
-        #region "Income Statement KPIs"
 
-        /*
-         Even though some of these metrics are available in the company overview,
-         its still necessary to have methods to calculate the metrics for trends
-         because the overview is only as of the most recent earnings date
-        
-         */
-        /// <summary>
-        /// Calculate income statement ratios
-        /// </summary>
-        /// <param name="numeratorAccount"></param>
-        /// <param name="denomonatorAccount"></param>
-        /// <param name="incomeStatementList"></param>
-        /// <returns></returns>
-        public Dictionary<string, decimal> CalcIncStatementFinancialRatio(string numeratorAccount,
-                                                                    string denomonatorAccount,
-                                                                    IncomeStatementList incomeStatementList)
-        {
-
-            // results dict for the ratio
-            Dictionary<string, decimal> ratioResults = new Dictionary<string, decimal>();
-
-            foreach(var statement in incomeStatementList.IncomeStatements)
-            {
-                // get fiscal date ending for the income statement
-                string fiscalDateEnding = statement.FiscalDateEnding;
-
-                // get values for calculation
-                long numeratorDollars = GetLongAccountValue(statement, numeratorAccount);
-                long denomonatorDollars = GetLongAccountValue(statement, denomonatorAccount);
-
-                // TODO: fill in edge cases / error checks of where any of these values could be 0
-                decimal ratio = CalcRatioResult(numeratorDollars, denomonatorDollars);
-
-                // TODO: Consider currency edge cases as a part of broader data structure, here it doesn't matter as much considering its a %
-                ratioResults.Add(fiscalDateEnding, ratio);
-
-            }
-
-            return ratioResults;
-        }
-        #endregion
-
-        // TODO: eliminate this redundancy as it relates to the income statement financial ratios, ok
-        // for now to test
-        #region "Balance Sheet KPIs"
-        public Dictionary<string, decimal> CalcBalanceSheetFinancialRatio(string numeratorAcct,
-            string denomonatorAcct, 
-            BalanceSheetList balanceSheetList)
-        {
-            Dictionary<string, decimal> ratioResults = new Dictionary<string, decimal>();
-
-
-            foreach(var statement in balanceSheetList.BalanceSheets)
-            {
-                string fiscalDateEnding = statement.FiscalDateEnding;
-
-                long numeratorDollars = GetLongAccountValue(statement, numeratorAcct);
-                long denomonatorDollars = GetLongAccountValue(statement, denomonatorAcct);
-
-                decimal ratio = CalcRatioResult(numeratorDollars, denomonatorDollars);
-                ratioResults.Add(fiscalDateEnding, ratio);
-            }
-
-            return ratioResults;
-
-        }
-
-        public Dictionary<string, decimal> CalcIncToBsFinancialRatio(Dictionary<string, long> numAcctBalances,
+        #region "Scorecard Helper Methods"
+        public Dictionary<string, decimal> CalcFinancialRatio(Dictionary<string, long> numAcctBalances,
             Dictionary<string, long> denomAcctBalances)
         {
             Dictionary<string, decimal> ratioResults = new Dictionary<string, decimal>();
@@ -190,8 +181,6 @@ namespace SolomonApp.Parsers
             // doesn't matter which one because they are in the same company they should match
             var years = numAcctBalances.Keys;
 
-            // 2.4.2022 - PICKUP - loop through the years and get the acct balance ratios for the results,
-            // return, finish out BS scorecard
             foreach (string yr in years)
             {
                 long numDollars = numAcctBalances[yr];
@@ -204,11 +193,31 @@ namespace SolomonApp.Parsers
             return ratioResults;
         }
 
+        public Dictionary<string, long> SumTwoAccountBalances(Dictionary<string, long> acctBalsOne,
+            Dictionary<string, long> acctBalsTwo)
+        {
+            Dictionary<string, long> sumBalanceResults = new Dictionary<string, long>();
+
+            // get the years, because this is for a single company doesn't matter which acct we
+            // take it from
+            var years = acctBalsOne.Keys;
+
+            foreach(var yr in years)
+            {
+                long acctOneDollars = acctBalsOne[yr];
+                long acctTwoDollars = acctBalsTwo[yr];
+
+                long acctBalSum = acctOneDollars + acctTwoDollars;
+
+                sumBalanceResults.Add(yr, acctBalSum);
+
+            }
+
+            return sumBalanceResults;
+
+        }
 
 
-        #endregion
-
-        #region "income statement helper methods"
         /// <summary>
         /// Calc the actual ratio to support the 5 year method
         /// CalcIncStatementFinancialRatio
@@ -223,35 +232,6 @@ namespace SolomonApp.Parsers
             decimal denomDecimal = Convert.ToDecimal(denomonatorDollars);
             decimal resultRatio = numeratorDollars / denomDecimal;
             return resultRatio;
-        }
-
-        #endregion
-
-        #region "Balance sheet helper methods"
-        public Dictionary<string, decimal> getCashToDebtRatio(BalanceSheetList balanceSheetList)
-        {
-            Dictionary<string, decimal> cashToDebtRatioResults = new Dictionary<string, decimal>();
-
-            foreach(var statement in balanceSheetList.BalanceSheets)
-            {
-                string fiscalDateEnding = statement.FiscalDateEnding;
-
-                // numerator
-                long cashAndEquivilants = GetLongAccountValue(statement, "CashAndShortTermInvestmentsRaw");
-
-                // denomonator
-                long shortTermDebt = GetLongAccountValue(statement, "ShortTermDebtRaw");
-                long longTermDebt = GetLongAccountValue(statement, "LongTermDebtRaw");
-
-                long totalDebt = shortTermDebt + longTermDebt;
-
-                var cashRatioRes = CalcRatioResult(cashAndEquivilants, totalDebt);
-
-                cashToDebtRatioResults.Add(fiscalDateEnding, cashRatioRes);
-
-            }
-
-            return cashToDebtRatioResults;
         }
         #endregion
 

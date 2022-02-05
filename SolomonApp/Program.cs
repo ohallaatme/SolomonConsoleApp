@@ -23,8 +23,6 @@ namespace SolomonApp
 
             string coTicker = "MSFT";
 
-
-            
             // == Income Statement Initial Test ==
             var incomeStatements = await finDb.GetIncomeStatement(coTicker);
 
@@ -44,7 +42,7 @@ namespace SolomonApp
         static async Task IncScorecardResults(IncomeStatementList incomeStatementList,
                                     FinancialDataParser finParser)
         {
-            var IncScorecard = finParser.AssembleIncScorecardOneCo(incomeStatementList, finParser);
+            var IncScorecard = finParser.AssembleIncScorecardOneCo(incomeStatementList);
             LoopThroughIncResults(IncScorecard, finParser);
         }
 
@@ -53,8 +51,8 @@ namespace SolomonApp
                                     FinancialDataParser finParser)
         {
             var BalScorecard = finParser.AssembleBsScorecardOneCo(balanceSheetList,
-                incomeStatementList,
-                finParser);
+                incomeStatementList);
+
             LoopThroughBsResults(BalScorecard, finParser);
         }
 
@@ -85,7 +83,11 @@ namespace SolomonApp
             var innerRes = results[ticker];
 
             var recPercRes = innerRes["netRecResults"];
+            var cashToDebtRes = innerRes["cashToDebtResults"];
+            var invToNetEarningsRes = innerRes["invToNetEarningsResults"];
             WriteIndividualKPIResults("Net Receivables as a % of Revenue", recPercRes, finParser);
+            WriteIndividualKPIResults("Cash to Debt Ratio", cashToDebtRes, finParser);
+            WriteIndividualKPIResults("Total Inventory as a Percent of Net Earnings", invToNetEarningsRes, finParser);
         }
 
         static void WriteIndividualKPIResults(string resType, Dictionary<string, decimal> results,
