@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SolomonApp.Models;
 using System.Collections.Generic;
 using System.Linq;
+using SolomonApp.Models.Results;
 
 namespace SolomonApp
 {
@@ -30,77 +31,88 @@ namespace SolomonApp
 
             FinancialDataParser finParser = new FinancialDataParser();
 
-            await IncScorecardResults(incomeStatements, finParser);
+            IncStatementScorecard incScorecard = finParser.AssembleIncScorecardOneCo(incomeStatements);
+
+            Console.WriteLine("Income Statement Scorecard for {0}", incScorecard.CoTicker);
+
+            PrintIncomeStatementScorecard(incScorecard, finParser);
 
             Console.WriteLine("Balance Sheet Tests: ");
 
             var balanceSheets = await finDb.GetBalanceSheet(coTicker);
 
-            await BalSheetScorecardResults(balanceSheets, incomeStatements, finParser);
+            BalSheetScorecard balShtScorecard = finParser.AssembleBsScorecardOneCo(balanceSheets,
+                incomeStatements);
+
+            Console.WriteLine("Balance Sheet Scorecard for {0}", balShtScorecard.CoTicker);
+
+            PrintBalanceSheetScorecard(balShtScorecard, finParser);
 
         }
-        static async Task IncScorecardResults(IncomeStatementList incomeStatementList,
-                                    FinancialDataParser finParser)
-        {
-            var IncScorecard = finParser.AssembleIncScorecardOneCo(incomeStatementList);
-            LoopThroughIncResults(IncScorecard, finParser);
-        }
 
-        static async Task BalSheetScorecardResults(BalanceSheetList balanceSheetList,
-                                    IncomeStatementList incomeStatementList,
-                                    FinancialDataParser finParser)
-        {
-            var BalScorecard = finParser.AssembleBsScorecardOneCo(balanceSheetList,
-                incomeStatementList);
-
-            LoopThroughBsResults(BalScorecard, finParser);
-        }
-
-        static void LoopThroughIncResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results,
-                                          FinancialDataParser finParser)
-        {
-            var ticker = results.Keys.First();
-            Console.WriteLine("Income Statement Results for: {0}", ticker);
-
-            var innerRes = results[ticker];
-
-            
-            var gpRes = innerRes["gpRes"];
-            var sgaRes = innerRes["sgaRes"];
-            var intExpRes = innerRes["intExpRes"];
-            var taxExpRes = innerRes["taxExpRes"];
-            WriteIndividualKPIResults("Gross Profit %", gpRes, finParser);
-            WriteIndividualKPIResults("SGA Expense as % of Gross Profit", sgaRes, finParser);
-            WriteIndividualKPIResults("int Expense as % of Operating Income", intExpRes, finParser);
-            WriteIndividualKPIResults("Tax Expense as % of Inc Before Taxes", taxExpRes, finParser);
-        }
-
-        static void LoopThroughBsResults(Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> results, FinancialDataParser finParser)
-        {
-            var ticker = results.Keys.First();
-            Console.WriteLine("Balance Sheet Results for: {0}", ticker);
-
-            var innerRes = results[ticker];
-
-            var recPercRes = innerRes["netRecResults"];
-            var cashToDebtRes = innerRes["cashToDebtResults"];
-            var invToNetEarningsRes = innerRes["invToNetEarningsResults"];
-            WriteIndividualKPIResults("Net Receivables as a % of Revenue", recPercRes, finParser);
-            WriteIndividualKPIResults("Cash to Debt Ratio", cashToDebtRes, finParser);
-            WriteIndividualKPIResults("Total Inventory as a Percent of Net Earnings", invToNetEarningsRes, finParser);
-        }
-
-        static void WriteIndividualKPIResults(string resType, Dictionary<string, decimal> results,
+        public static void PrintIncomeStatementScorecard(IncStatementScorecard incScorecard,
             FinancialDataParser finParser)
         {
-            Console.WriteLine(resType);
+            Console.WriteLine("Gross Profit Results: ");
 
-            foreach(var item in results)
+            foreach (var gp in incScorecard.GrossProfitResults)
             {
-                var formRes = finParser.FormatPercentValues(item.Value);
-                Console.WriteLine("{0} : {1} ", item.Key, formRes);
+                string res = finParser.FormatPercentValues(gp.Value);
+                Console.WriteLine("{0}: {1}", gp.Key, res);
             }
 
+            Console.WriteLine("SG&A Expense as a Percent of Operating Income: ");
+
+            foreach (var sga in incScorecard.SgaResults)
+            {
+                string res = finParser.FormatPercentValues(sga.Value);
+                Console.WriteLine("{0}: {1}", sga.Key, res);
+            }
+
+            Console.WriteLine("Interest Expense as a % of Operating Income: ");
+
+            foreach (var intexp in incScorecard.IntExpResults)
+            {
+                string res = finParser.FormatPercentValues(intexp.Value);
+                Console.WriteLine("{0}: {1}", intexp.Key, res);
+            }
+
+            Console.WriteLine("Tax Expense as a % of Income Before Tax: ");
+
+            foreach (var taxexp in incScorecard.TaxExpResults)
+            {
+                string res = finParser.FormatPercentValues(taxexp.Value);
+                Console.WriteLine("{0}: {1}", taxexp.Key, res);
+
+            }
+        }
+
+        public static void PrintBalanceSheetScorecard(BalSheetScorecard balShtScorecard,
+            FinancialDataParser finParser)
+        {
+            Console.WriteLine("Net Receivables as a % of Gross Revenue: ");
+
+            foreach (var netRecRes in balShtScorecard.NetRecResults)
+            {
+                string res = finParser.FormatPercentValues(netRecRes.Value);
+                Console.WriteLine("{0}: {1}", netRecRes.Key, res);
+            }
+
+            Console.WriteLine("Cash to Debt Ratio: ");
+
+            foreach (var cshDebtRes in balShtScorecard.CashToDebtResults)
+            {
+                string res = finParser.FormatPercentValues(cshDebtRes.Value);
+                Console.WriteLine("{0}: {1}", cshDebtRes.Key, res);
+            }
+
+            Console.WriteLine("Inventory as a % of Net Income: ");
+
+            foreach (var invRes in balShtScorecard.InvToNetEarningsResults)
+            {
+                string res = finParser.FormatPercentValues(invRes.Value);
+                Console.WriteLine("{0}: {1}", invRes.Key, res);
+            }
         }
     }
 }
