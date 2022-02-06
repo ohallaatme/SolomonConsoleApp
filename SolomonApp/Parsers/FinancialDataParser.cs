@@ -2,12 +2,55 @@
 using System.Collections.Generic;
 using System.Linq;
 using SolomonApp.Models;
+using SolomonApp.Models.Results;
 using SolomonApp.Parsers.Interfaces;
 
 namespace SolomonApp.Parsers
 {
     public class FinancialDataParser : IFinancialDataParser
     {
+        #region "Company Comparison Scorecards"
+
+        public FinalCoComparisonScorecard CompanyComparison(List<IncomeStatementList> incomeStatementLists,
+            List<BalanceSheetList> balanceSheetLists)
+        {
+            FinalCoComparisonScorecard finalScorecard = new FinalCoComparisonScorecard();
+
+            // get all the co tickers to manage iteration between inc and bs lists for bs ratios
+
+            List<string> coTickers = new List<string>();
+
+            // Income statment ratios
+            foreach (IncomeStatementList incStmtList in incomeStatementLists)
+            {
+                IncStatementScorecard incStmtScorecard = AssembleIncScorecardOneCo(incStmtList);
+
+                coTickers.Add(incStmtScorecard.CoTicker);
+
+                finalScorecard.IncomeStatementScorecards.Add(incStmtScorecard);
+            }
+
+            // Balance sheet ratios
+            foreach (string co in coTickers)
+            {
+                var incStatementList = incomeStatementLists.Where(incomeStatementList => incomeStatementList.Symbol == co).FirstOrDefault();
+
+                var balanceSheetList = balanceSheetLists.Where(balanceSheetList => balanceSheetList.Symbol == co).FirstOrDefault();
+
+                BalSheetScorecard balSheetScorecard = AssembleBsScorecardOneCo(balanceSheetList, incStatementList);
+
+                finalScorecard.BalSheetScorecards.Add(balSheetScorecard);
+
+            }
+            
+
+            // PICKUP 2.5.2022 - Write program tests around assembling the final scorecards
+            return finalScorecard;
+
+        }
+
+
+        #endregion
         #region "SingleCoScorecards"
         /// <summary>
         /// output format is {co ticker : {ratioName : {fiscalDate : Ratio ,fiscalDate : Ratio}) ratioName : {fiscalDate : Ratio}..}}}
@@ -15,16 +58,15 @@ namespace SolomonApp.Parsers
         /// <param name="incomeStatementList"></param>
         /// <param name="finParser"></param>
         /// <returns></returns>
-        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> AssembleIncScorecardOneCo(IncomeStatementList incomeStatementList)
+        public IncStatementScorecard AssembleIncScorecardOneCo(IncomeStatementList incomeStatementList)
         {
             // grab co ticker
             var ticker = incomeStatementList.Symbol;
 
             // final results
-            Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> incStatementScorecard = new Dictionary<string, Dictionary<string, Dictionary<string, decimal>>>();
+            IncStatementScorecard incStmtScorecard = new IncStatementScorecard();
 
-            // Ratio Results - Stores the ratio name as the key and the results by fiscal date ending as the value inner dictionary
-            Dictionary<string, Dictionary<string, decimal>> ratioResults = new Dictionary<string, Dictionary<string, decimal>>();
+            incStmtScorecard.CoTicker = ticker;
 
             // Accounts leveraged
             string grossProfitRaw = "GrossProfitRaw";
@@ -58,43 +100,36 @@ namespace SolomonApp.Parsers
 
 
             // GpResults
-            var gpResults = CalcFinancialRatio(acctBalances[grossProfitRaw], acctBalances[totalRevenueRaw]);
-            ratioResults.Add("gpRes", gpResults);
-
+            incStmtScorecard.GrossProfitResults = CalcFinancialRatio(acctBalances[grossProfitRaw], acctBalances[totalRevenueRaw]);
 
             // SgaResults
-            var sgaResults = CalcFinancialRatio(acctBalances[sgaRaw], acctBalances[operatingIncomeRaw]);
-            ratioResults.Add("sgaRes", sgaResults);
+            incStmtScorecard.SgaResults = CalcFinancialRatio(acctBalances[sgaRaw], acctBalances[operatingIncomeRaw]);
 
             // intExpResults
-            var intExpResults = CalcFinancialRatio(acctBalances[interestExpenseRaw], acctBalances[operatingIncomeRaw]);
-            ratioResults.Add("intExpRes", intExpResults);
+            incStmtScorecard.IntExpResults = CalcFinancialRatio(acctBalances[interestExpenseRaw], acctBalances[operatingIncomeRaw]);
 
             // tax expense test results
             // i.e. if tax exp reported is not 35% of income before taxes where is the extra
             // income coming from
-            var taxExpResults = CalcFinancialRatio(acctBalances[incomeTaxExpenseRaw], acctBalances[incomeBeforeTaxRaw]);
-            ratioResults.Add("taxExpRes", taxExpResults);
+            incStmtScorecard.TaxExpResults = CalcFinancialRatio(acctBalances[incomeTaxExpenseRaw], acctBalances[incomeBeforeTaxRaw]);
 
             // return final ratio results
-            incStatementScorecard.Add(ticker, ratioResults);
-            return incStatementScorecard;
+            return incStmtScorecard;
 
         }
 
 
         // Note many balance sheet ratios require income statement accounts
-        public Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> AssembleBsScorecardOneCo(BalanceSheetList balanceSheetList,
+        public BalSheetScorecard AssembleBsScorecardOneCo(BalanceSheetList balanceSheetList,
                                             IncomeStatementList incomeStatementList)
         {
             // grab co ticker
             var ticker = balanceSheetList.Symbol;
 
             // final results
-            Dictionary<string, Dictionary<string, Dictionary<string, decimal>>> balanceSheetScorecard = new Dictionary<string, Dictionary<string, Dictionary<string, decimal>>>();
+            BalSheetScorecard balShtScorecard = new BalSheetScorecard();
 
-            // Ratio Results - Stores the ratio name as the key and the results by fiscal date ending as the value inner dictionary
-            Dictionary<string, Dictionary<string, decimal>> ratioResults = new Dictionary<string, Dictionary<string, decimal>>();
+            balShtScorecard.CoTicker = ticker;
 
 
             // == Accounts leveraged ==
@@ -150,23 +185,19 @@ namespace SolomonApp.Parsers
 
 
             // net receivables as a % of rev results
-            Dictionary<string, decimal> recRevPercResults = CalcFinancialRatio(acctBalances[curNetReceivablesRaw], acctBalances[totalRevenueRaw]);
-            ratioResults.Add("netRecResults", recRevPercResults);
+            balShtScorecard.NetRecResults = CalcFinancialRatio(acctBalances[curNetReceivablesRaw], acctBalances[totalRevenueRaw]);
 
             // cash to debt results
-            Dictionary<string, decimal> cashToDebtResults = CalcFinancialRatio(acctBalances[cashAndStInvestmentsRaw],
+            balShtScorecard.CashToDebtResults = CalcFinancialRatio(acctBalances[cashAndStInvestmentsRaw],
                 totalDebtRawBalances);
-            ratioResults.Add("cashToDebtResults", cashToDebtResults);
 
             // inventory to net earnings, if both of these are on a corresponding rise its a sign of competitive advantage
             // (vs booming and busting every few years)
-            Dictionary<string, decimal> invToNetEarningsResults = CalcFinancialRatio(acctBalances[totalInvRaw],
+            balShtScorecard.InvToNetEarningsResults = CalcFinancialRatio(acctBalances[totalInvRaw],
                 acctBalances[totalNetIncRaw]);
-            ratioResults.Add("invToNetEarningsResults", invToNetEarningsResults);
 
             // final res
-            balanceSheetScorecard.Add(ticker, ratioResults);
-            return balanceSheetScorecard;
+            return balShtScorecard;
         }
         #endregion
 

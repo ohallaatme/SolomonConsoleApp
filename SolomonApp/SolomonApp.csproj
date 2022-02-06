@@ -10,11 +10,13 @@
     <None Remove="Parsers\" />
     <None Remove="Data\" />
     <None Remove="Parsers\Interfaces\" />
+    <None Remove="Models\Results\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Parsers\" />
     <Folder Include="Data\" />
     <Folder Include="Parsers\Interfaces\" />
+    <Folder Include="Models\Results\" />
   </ItemGroup>
 </Project>
