@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "hpkQGe4ITs/ccpu5FpZ4ZEaz8RVpIyXPfRz7waz7/aCfmRl3QDGOnBWSwFXPmiicjKYWO8WRlEm+d7702PnTUA==",
+  "dgSpecHash": "7AP2eO5ZASzyrH/mYwQXFDOxEG+4T0+uQUElW+f4emdkcWMYgCFpHQ4vNIbUo+9Wy3jhebBZfRKKbJ6YiwJIQw==",
   "success": true,
   "projectFilePath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/SolomonApp.csproj",
   "expectedPackageFiles": [
+    "/Users/katherineohalloran/.nuget/packages/documentformat.openxml/2.15.0/documentformat.openxml.2.15.0.nupkg.sha512",
+    "/Users/katherineohalloran/.nuget/packages/system.io.packaging/4.7.0/system.io.packaging.4.7.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/microsoft.netcore.app.host.osx-x64/5.0.12/microsoft.netcore.app.host.osx-x64.5.0.12.nupkg.sha512"
   ],
   "logs": []

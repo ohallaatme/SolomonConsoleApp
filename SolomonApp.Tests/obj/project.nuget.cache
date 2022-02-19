@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "WFxt4FNTVxRBHCSy4rCacH7k/ZThSauQ+EbPFW0zZFyw3kWo6P0iyh+ao2a6BFRr6tCcZcEF2+y2ZR/Zmz23xg==",
+  "dgSpecHash": "im9b3IzLnn58F68EuzY1ONUBIX4vWaEPdlZck3NJ4Jd+DduyrrD5Wyi5RubNKlB0+j3D9Vi5F770vyKAYBqRpQ==",
   "success": true,
   "projectFilePath": "/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp.Tests/SolomonApp.Tests.csproj",
   "expectedPackageFiles": [
     "/Users/katherineohalloran/.nuget/packages/coverlet.collector/3.0.2/coverlet.collector.3.0.2.nupkg.sha512",
+    "/Users/katherineohalloran/.nuget/packages/documentformat.openxml/2.15.0/documentformat.openxml.2.15.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/microsoft.codecoverage/16.9.4/microsoft.codecoverage.16.9.4.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/microsoft.csharp/4.0.1/microsoft.csharp.4.0.1.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/microsoft.net.test.sdk/16.9.4/microsoft.net.test.sdk.16.9.4.nupkg.sha512",
@@ -50,6 +51,7 @@
     "/Users/katherineohalloran/.nuget/packages/system.io.compression.zipfile/4.3.0/system.io.compression.zipfile.4.3.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/system.io.filesystem/4.3.0/system.io.filesystem.4.3.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/system.io.filesystem.primitives/4.3.0/system.io.filesystem.primitives.4.3.0.nupkg.sha512",
+    "/Users/katherineohalloran/.nuget/packages/system.io.packaging/4.7.0/system.io.packaging.4.7.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/system.linq/4.3.0/system.linq.4.3.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/system.linq.expressions/4.3.0/system.linq.expressions.4.3.0.nupkg.sha512",
     "/Users/katherineohalloran/.nuget/packages/system.net.http/4.3.0/system.net.http.4.3.0.nupkg.sha512",

@@ -29,4 +29,7 @@
 /Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/obj/Debug/net5.0/ref/SolomonApp.dll
 /Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/obj/Debug/net5.0/SolomonApp.pdb
 /Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/obj/Debug/net5.0/SolomonApp.genruntimeconfig.cache
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/obj/Debug/net5.0/SolomonApp.csproj.CopyComplete
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/bin/Debug/net5.0/DocumentFormat.OpenXml.dll
+/Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/bin/Debug/net5.0/System.IO.Packaging.dll
 /Users/katherineohalloran/Documents/Solomon/ConsoleBackendApp/SolomonConsoleApp/SolomonApp/bin/Debug/net5.0/SolomonApp

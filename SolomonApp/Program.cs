@@ -7,6 +7,8 @@ using SolomonApp.Models;
 using System.Collections.Generic;
 using System.Linq;
 using SolomonApp.Models.Results;
+using SolomonApp.ExcelExport;
+using System.Threading;
 
 namespace SolomonApp
 {
@@ -22,31 +24,71 @@ namespace SolomonApp
 
             FinanceDb finDb = new FinanceDb(apiKey);
 
-            string coTicker = "MSFT";
+            string coTickerOne = "MSFT";
+            string coTickerTwo = "AAPL";
+            string coTickerThree = "NFLX";
+            string coTickerFour = "FB";
+            string coTickerFive = "AMZN";
 
-            // == Income Statement Initial Test ==
-            var incomeStatements = await finDb.GetIncomeStatement(coTicker);
-
-            Console.WriteLine("Income Statement Tests: ");
+            List<string> tickers = new List<string>
+            {
+                coTickerOne,
+                coTickerTwo,
+                coTickerThree,
+                coTickerFour,
+                coTickerFive
+            };
 
             FinancialDataParser finParser = new FinancialDataParser();
 
-            IncStatementScorecard incScorecard = finParser.AssembleIncScorecardOneCo(incomeStatements);
 
-            Console.WriteLine("Income Statement Scorecard for {0}", incScorecard.CoTicker);
+            List<IncStatementScorecard> incScorecards = new List<IncStatementScorecard>();
+            List<BalSheetScorecard> balShtScorecards = new List<BalSheetScorecard>();
+            // Need to count the # of API requests and pause
+            // when there have been 5 in less than a mn
+            int apiReqs = 0;
 
-            PrintIncomeStatementScorecard(incScorecard, finParser);
+            DateTime startTime = DateTime.Now;
+            DateTime endTime;
+            
+            foreach (string ticker in tickers)
+            {
+                // inc statement scorecard
+                var incomeStatements = await finDb.GetIncomeStatement(ticker);
+                apiReqs++;
 
-            Console.WriteLine("Balance Sheet Tests: ");
+                IncStatementScorecard incScorecard = finParser.AssembleIncScorecardOneCo(incomeStatements);
 
-            var balanceSheets = await finDb.GetBalanceSheet(coTicker);
+                incScorecards.Add(incScorecard);
 
-            BalSheetScorecard balShtScorecard = finParser.AssembleBsScorecardOneCo(balanceSheets,
+                // balance sheet scorecard
+                var balanceSheets = await finDb.GetBalanceSheet(ticker);
+                apiReqs++;
+
+                BalSheetScorecard balShtScorecard = finParser.AssembleBsScorecardOneCo(balanceSheets,
                 incomeStatements);
 
-            Console.WriteLine("Balance Sheet Scorecard for {0}", balShtScorecard.CoTicker);
+                balShtScorecards.Add(balShtScorecard);
 
-            PrintBalanceSheetScorecard(balShtScorecard, finParser);
+                endTime = DateTime.Now;
+
+                var delta = (endTime - startTime).TotalSeconds;
+
+                /*
+                if (apiReqs >= 4 && delta < 60)
+                {
+                    var msToSleep = Convert.ToInt32((60 - delta) * 1000);
+                    await Task.Delay(msToSleep);
+                }
+                */
+                await Task.Delay(30000);
+
+            }
+
+
+            XmlWriter xmlWriter = new XmlWriter();
+
+            xmlWriter.WriteFinStatementScorecard(incScorecards, balShtScorecards);
 
         }
 

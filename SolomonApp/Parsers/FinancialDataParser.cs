@@ -248,7 +248,6 @@ namespace SolomonApp.Parsers
 
         }
 
-
         /// <summary>
         /// Calc the actual ratio to support the 5 year method
         /// CalcIncStatementFinancialRatio

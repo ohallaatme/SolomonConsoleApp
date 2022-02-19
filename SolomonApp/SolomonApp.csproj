@@ -11,6 +11,9 @@
     <None Remove="Data\" />
     <None Remove="Parsers\Interfaces\" />
     <None Remove="Models\Results\" />
+    <None Remove="Microsoft.Office.Interop.Excel" />
+    <None Remove="ExcelExport\" />
+    <None Remove="DocumentFormat.OpenXml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -18,5 +21,9 @@
     <Folder Include="Data\" />
     <Folder Include="Parsers\Interfaces\" />
     <Folder Include="Models\Results\" />
+    <Folder Include="ExcelExport\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.15.0" />
   </ItemGroup>
 </Project>
